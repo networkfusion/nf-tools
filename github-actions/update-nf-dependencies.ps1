@@ -166,7 +166,7 @@ foreach ($packageFile in $packagesConfig)
 
             "Updating package $packageName" | Write-Host
 
-            if ('${{ github.ref }}' -like '*release*' -or '${{ github.ref }}' -like '*master*')
+            if ('${{ github.ref }}' -like '*release*' -or '${{ github.ref }}' -like '*master*' -or '${{ github.ref }}' -like '*main*' -or '${{ github.ref }}' -like '*stable*')
             {
                 # don't allow prerelease for release and master branches
                 foreach ($solutionFile in $solutionFiles)
