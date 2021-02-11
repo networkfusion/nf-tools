@@ -131,7 +131,14 @@ foreach ($packageFile in $packagesConfig)
         # restore NuGet packages, need to do this before anything else
         foreach ($solutionFile in $solutionFiles)
         {
-            nuget restore $solutionFile -ConfigFile $nugetConfig
+            if ($nugetConfig)
+            {
+                nuget restore $solutionFile -ConfigFile $nugetConfig
+            }
+            else
+            {
+                nuget restore $solutionFile
+            }
         }
 
         # temporarily rename csproj files to csproj-temp so they are not affected.
@@ -164,7 +171,14 @@ foreach ($packageFile in $packagesConfig)
                 # don't allow prerelease for release and master branches
                 foreach ($solutionFile in $solutionFiles)
                 {
-                    nuget update $solutionFile.FullName -Id "$packageName" -ConfigFile $nugetConfig
+                    if ($nugetConfig)
+                    {
+                        nuget update $solutionFile.FullName -Id "$packageName" -ConfigFile $nugetConfig
+                    }
+                    else
+                    {
+                        nuget update $solutionFile.FullName -Id "$packageName"
+                    }
                 }
             }
             else
@@ -172,7 +186,14 @@ foreach ($packageFile in $packagesConfig)
                 # allow prerelease for all others
                 foreach ($solutionFile in $solutionFiles)
                 {
-                    nuget update $solutionFile.FullName -Id "$packageName" -ConfigFile $nugetConfig -PreRelease
+                    if ($nugetConfig)
+                    {
+                        nuget update $solutionFile.FullName -Id "$packageName" -ConfigFile $nugetConfig -PreRelease
+                    }
+                    else
+                    {
+                        nuget update $solutionFile.FullName -Id "$packageName" -PreRelease
+                    }
                 }
             }
 
