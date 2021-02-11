@@ -103,6 +103,7 @@ foreach ($packageFile in $packagesConfig)
     $nodes = $packagesDoc.SelectNodes("*").SelectNodes("*")
 
     $packageList = @(,@())
+    $packageList = $packageList | select -Unique
 
     "Building package list to update" | Write-Host
 
