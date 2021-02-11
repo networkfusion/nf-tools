@@ -243,36 +243,44 @@ foreach ($packageFile in $packagesConfig)
                 
                 "Updating nuspec files" | Write-Host
 
-                foreach ($nuspec in $nuspecFiles)
+                if ($nuspecFiles.length -gt 0)
                 {
-                    "Nuspec file is " | Write-Host
-
-                    [xml]$nuspecDoc = Get-Content $nuspec -Encoding UTF8
-
-                    $nodes = $nuspecDoc.SelectNodes("*").SelectNodes("*")
-
-                    foreach ($node in $nodes)
+                    foreach ($nuspec in $nuspecFiles)
                     {
-                        if($node.Name -eq "metadata")
+                        "Nuspec file is " | Write-Host
+
+                        [xml]$nuspecDoc = Get-Content $nuspec -Encoding UTF8
+
+                        $nodes = $nuspecDoc.SelectNodes("*").SelectNodes("*")
+
+                        foreach ($node in $nodes)
                         {
-                            foreach ($metadataItem in $node.ChildNodes)
-                            {                          
-                                if($metadataItem.Name -eq "dependencies")
-                                {
-                                    foreach ($dependency in $metadataItem.ChildNodes)
+                            if($node.Name -eq "metadata")
+                            {
+                                foreach ($metadataItem in $node.ChildNodes)
+                                {                          
+                                    if($metadataItem.Name -eq "dependencies")
                                     {
-                                        if($dependency.Attributes["id"].value -eq $packageName)
+                                        foreach ($dependency in $metadataItem.ChildNodes)
                                         {
-                                            "Updating dependency." | Write-Host
-                                            $dependency.Attributes["version"].value = "$packageTargetVersion"
+                                            if($dependency.Attributes["id"].value -eq $packageName)
+                                            {
+                                                "Updating dependency." | Write-Host
+                                                $dependency.Attributes["version"].value = "$packageTargetVersion"
+                                            }
                                         }
                                     }
                                 }
                             }
                         }
-                    }
 
-                    $nuspecDoc.Save($nuspec[0].FullName)
+                        $nuspecDoc.Save($nuspec[0].FullName)
+                    }
+                    "Finished updating nuspec files." | Write-Host
+                }
+                else
+                {
+                    "No nuspec files to update." | Write-Host
                 }
 
                 # build commit message
