@@ -47,17 +47,18 @@ git config --global core.autocrlf true
 
 # find solution file in repository
 $solutionFiles = (Get-ChildItem -Path ".\" -Include "*.sln" -Recurse)
-
-# find packages.config
-$packagesConfig = (Get-ChildItem -Path ".\" -Include "packages.config" -Recurse)
     
 # find NuGet.Config
 $nugetConfig = (Get-ChildItem -Path ".\" -Include "NuGet.Config" -Recurse) | Select-Object -First 1
 
 foreach ($solutionFile in $solutionFiles)
 {
+    $packagesPath = Split-Path "$solutionFile" -Leaf
+    # find packages.config
+    $packagesConfig = (Get-ChildItem -Path "$packagesPath" -Include "packages.config" -Recurse)
+
     # load packages.config as XML doc
-    [xml]$packagesDoc = Get-Content $packageFile
+    [xml]$packagesDoc = Get-Content $packagesConfig
 
     $nodes = $packagesDoc.SelectNodes("*").SelectNodes("*")
 
