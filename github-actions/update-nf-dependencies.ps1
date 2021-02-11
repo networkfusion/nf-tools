@@ -131,7 +131,7 @@ foreach ($packageFile in $packagesConfig)
         # restore NuGet packages, need to do this before anything else
         foreach ($solutionFile in $solutionFiles)
         {
-            if ($nugetConfig)
+            if (![string]::IsNullOrEmpty($nugetConfig))
             {
                 nuget restore $solutionFile -ConfigFile $nugetConfig
             }
@@ -171,7 +171,7 @@ foreach ($packageFile in $packagesConfig)
                 # don't allow prerelease for release and master branches
                 foreach ($solutionFile in $solutionFiles)
                 {
-                    if ($nugetConfig)
+                    if (![string]::IsNullOrEmpty($nugetConfig))
                     {
                         nuget update $solutionFile.FullName -Id "$packageName" -ConfigFile $nugetConfig
                     }
@@ -186,7 +186,7 @@ foreach ($packageFile in $packagesConfig)
                 # allow prerelease for all others
                 foreach ($solutionFile in $solutionFiles)
                 {
-                    if ($nugetConfig)
+                    if (![string]::IsNullOrEmpty($nugetConfig))
                     {
                         nuget update $solutionFile.FullName -Id "$packageName" -ConfigFile $nugetConfig -PreRelease
                     }
