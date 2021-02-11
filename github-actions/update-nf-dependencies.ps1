@@ -45,57 +45,16 @@ git config --global user.name nfbot
 git config --global user.email dependencybot@nanoframework.net
 git config --global core.autocrlf true
 
-# check for special repos that have sources on different location
+# find solution file in repository
+$solutionFiles = (Get-ChildItem -Path ".\" -Include "*.sln" -Recurse)
 
-######################################
-# paho.mqtt.m2mqtt 
-if ($library -like "paho.mqtt.m2mqtt")
-{
-    # solution is at root
-
-    # find solution file in repository
-    $solutionFile = (Get-ChildItem -Path ".\" -Include "M2Mqtt.nanoFramework.sln" -Recurse)
-
-    # find packages.config
-    $packagesConfig = (Get-ChildItem -Path ".\M2Mqtt" -Include "packages.config" -Recurse)
-
-}
-######################################
-# AMQPLite
-elseif ($library -like "amqpnetlite")
-{
-    # solution is at root
-
-    # need to set working path
-    $workingPath = '.\nanoFramework', '.\Examples\Device\Device.SmallMemory.nanoFramework', '.\Examples\Device\Device.Thermometer.nanoFramework', '.\Examples\ServiceBus\ServiceBus.EventHub.nanoFramework'
-
-    # find solution file in repository
-    $solutionFile = (Get-ChildItem -Path ".\" -Include "amqp-nanoFramework.sln" -Recurse)
-
-    # find packages.config
-    $packagesConfig = (Get-ChildItem -Path ".\nanoFramework" -Include "packages.config" -Recurse)
-
-    # CD-CI branch is not 'develop'
-    $baseBranch = "cd-nanoframework"
-
-}
-########################################
-# now all the rest
-else 
-{
-    # find solution file in repository
-    $solutionFiles = (Get-ChildItem -Path ".\" -Include "*.sln" -Recurse)
-
-    # find packages.config
-    $packagesConfig = (Get-ChildItem -Path ".\" -Include "packages.config" -Recurse)
+# find packages.config
+$packagesConfig = (Get-ChildItem -Path ".\" -Include "packages.config" -Recurse)
     
-    # find NuGet.Config
-    $nugetConfig = (Get-ChildItem -Path ".\" -Include "NuGet.Config" -Recurse) | Select-Object -First 1
-    
-    #$baseBranch = ${GITHUB_REF##*/} # This should not be needed, as the branch workflow initiates the update. 
-}
+# find NuGet.Config
+$nugetConfig = (Get-ChildItem -Path ".\" -Include "NuGet.Config" -Recurse) | Select-Object -First 1
 
-foreach ($packageFile in $packagesConfig)
+foreach ($solutionFile in $solutionFiles)
 {
     # load packages.config as XML doc
     [xml]$packagesDoc = Get-Content $packageFile
@@ -130,18 +89,15 @@ foreach ($packageFile in $packagesConfig)
         "NuGet packages to update:" | Write-Host
         $packageList | Write-Host
 
-        # restore NuGet packages, need to do this before anything else
-        foreach ($solutionFile in $solutionFiles)
+        if (![string]::IsNullOrEmpty($nugetConfig))
         {
-            if (![string]::IsNullOrEmpty($nugetConfig))
-            {
-                nuget restore $solutionFile -ConfigFile $nugetConfig
-            }
-            else
-            {
-                nuget restore $solutionFile
-            }
+            nuget restore $solutionFile -ConfigFile $nugetConfig
         }
+        else
+        {
+            nuget restore $solutionFile
+        }
+        
 
         # temporarily rename csproj files to csproj-temp so they are not affected.
         Get-ChildItem -Path $workingPath -Include "*.csproj" -Recurse |
@@ -185,17 +141,14 @@ foreach ($packageFile in $packagesConfig)
             }
             else
             {
-                # allow prerelease for all others
-                foreach ($solutionFile in $solutionFiles)
+
+                if (![string]::IsNullOrEmpty($nugetConfig))
                 {
-                    if (![string]::IsNullOrEmpty($nugetConfig))
-                    {
-                        nuget update $solutionFile.FullName -Id "$packageName" -ConfigFile $nugetConfig -PreRelease
-                    }
-                    else
-                    {
-                        nuget update $solutionFile.FullName -Id "$packageName" -PreRelease
-                    }
+                   nuget update $solutionFile.FullName -Id "$packageName" -ConfigFile $nugetConfig -PreRelease
+                }
+                else
+                {
+                    nuget update $solutionFile.FullName -Id "$packageName" -PreRelease
                 }
             }
 
