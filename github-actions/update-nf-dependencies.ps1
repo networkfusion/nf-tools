@@ -25,7 +25,7 @@ $newBranchName = "develop-nfbot/update-dependencies/" + [guid]::NewGuid().ToStri
 $workingPath = '.\'
 
 # need this to remove definition of redirect stdErr (only on Azure Pipelines image fo VS2019)
-$env:GIT_REDIRECT_STDERR = '2>&1'
+# $env:GIT_REDIRECT_STDERR = '2>&1'
 
 # setup github stuff
 git config --global gc.auto 0
@@ -252,8 +252,6 @@ foreach ($solutionFile in $solutionFiles)
     }
 }
 
-### TODO: loop through soluton files and replace content containing .csproj-temp to .csproj
-### TODO: loop through soluton files and replace content containing .csproj to .nfproj
 
 # rename csproj files back to nfproj
 Get-ChildItem -Path $workingPath -Include "*.csproj" -Recurse |
@@ -271,6 +269,8 @@ Foreach-object {
     Rename-Item  -Path $_.fullname -Newname $NewName; 
     }
 
+### TODO: loop through soluton files and replace content containing .csproj-temp to .csproj
+### TODO: loop through soluton files and replace content containing .csproj to .nfproj
 foreach ($solutionFile in $solutionFiles)
 {
     $content = Get-Content $solutionFile
