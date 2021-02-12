@@ -3,17 +3,6 @@
 
 # This PS update the .NET nanoFramework dependencies on the repo where it's running
 
-if($env:NF_Library -ne $null)
-{
-    ######################################
-    # this is building from Azure Pipelines
-
-    Set-Location "$env:Build_SourcesDirectory\$env:NF_Library" | Out-Null
-
-    $library = $env:NF_Library
-}
-else
-{
     ######################################
     # this is building from github actions
 
@@ -27,7 +16,6 @@ else
     "Moving to 'main' folder" | Write-Host
 
     Set-Location "main" | Out-Null
-}
 
 # init/reset these
 $updateCount = 0
@@ -53,7 +41,7 @@ $nugetConfig = (Get-ChildItem -Path ".\" -Include "NuGet.Config" -Recurse) | Sel
 
 foreach ($solutionFile in $solutionFiles)
 {
-    $packagesPath = Split-Path "$solutionFile" -Leaf
+    $packagesPath = Split-Path -Path $solutionFile
     # find packages.config
     $packagesConfig = (Get-ChildItem -Path "$packagesPath" -Include "packages.config" -Recurse)
 
