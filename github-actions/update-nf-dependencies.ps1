@@ -276,7 +276,7 @@ foreach ($solutionFile in $solutionFiles)
     $content = Get-Content $solutionFile
     $content = $content -replace '.csproj-temp', '.csproj'
     $content = $content -replace '.csproj', '.nfproj'
-    $content | Set-Content -Path '$solutionFile
+    $content | Set-Content -Path $solutionFile
 }
 
 if($updateCount -eq 0)
