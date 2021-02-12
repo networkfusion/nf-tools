@@ -49,6 +49,9 @@ Get-ChildItem -Path $workingPath -Include "*.nfproj" -Recurse |
         Rename-Item  -Path $_.fullname -Newname $NewName; 
     }
 
+### TODO: loop through soluton files and replace content containing .csproj to .csproj-temp
+### TODO: loop through soluton files and replace content containing .nfproj to .csproj
+
 # find solution file in repository
 $solutionFiles = (Get-ChildItem -Path ".\" -Include "*.sln" -Recurse)
     
@@ -120,24 +123,23 @@ foreach ($solutionFile in $solutionFiles)
                 if ('${{ github.ref }}' -like '*release*' -or '${{ github.ref }}' -like '*master*' -or '${{ github.ref }}' -like '*main*' -or '${{ github.ref }}' -like '*stable*')
                 {
                     # don't allow prerelease for release and master branches
-                    foreach ($solutionFile in $solutionFiles)
+
+                    if (![string]::IsNullOrEmpty($nugetConfig))
                     {
-                        if (![string]::IsNullOrEmpty($nugetConfig))
-                        {
-                            nuget update $solutionFile.FullName -Id "$packageName" -ConfigFile $nugetConfig
-                        }
-                        else
-                        {
-                            nuget update $solutionFile.FullName -Id "$packageName"
-                        }
+                        nuget update $solutionFile.FullName -Id "$packageName" -ConfigFile $nugetConfig
                     }
+                    else
+                    {
+                        nuget update $solutionFile.FullName -Id "$packageName"
+                    }
+
                 }
                 else
                 {
 
                     if (![string]::IsNullOrEmpty($nugetConfig))
                     {
-                    nuget update $solutionFile.FullName -Id "$packageName" -ConfigFile $nugetConfig -PreRelease
+                        nuget update $solutionFile.FullName -Id "$packageName" -ConfigFile $nugetConfig -PreRelease
                     }
                     else
                     {
@@ -240,6 +242,9 @@ foreach ($solutionFile in $solutionFiles)
         }
     }
 }
+
+### TODO: loop through soluton files and replace content containing .csproj-temp to .csproj
+### TODO: loop through soluton files and replace content containing .csproj to .nfproj
 
 # rename csproj files back to nfproj
 Get-ChildItem -Path $workingPath -Include "*.csproj" -Recurse |
