@@ -274,8 +274,8 @@ Foreach-object {
 foreach ($solutionFile in $solutionFiles)
 {
     $content = Get-Content $solutionFile
-    $content = $content -replace '.csproj-temp', '.csproj'
     $content = $content -replace '.csproj', '.nfproj'
+    $content = $content -replace '.csproj-temp', '.csproj'
     $content | Set-Content -Path $solutionFile
 }
 
@@ -295,9 +295,11 @@ else
     "This is the commit message?!" | Write-Host
     $commitMessage | Write-Host
 
+    $commitMessage = "Updating multiple dependencies"
+
     echo "CREATE_PR=true" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf8 -Append
     echo "BRANCH_NAME=$newBranchName" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf8 -Append
-    echo "PR_MESSAGE=[string]$commitMessage" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf8 -Append
+    echo "PR_MESSAGE=$commitMessage" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf8 -Append
     echo "PR_TITLE=$prTitle" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf8 -Append   
     
 }
