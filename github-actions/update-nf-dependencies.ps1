@@ -49,11 +49,20 @@ Get-ChildItem -Path $workingPath -Include "*.nfproj" -Recurse |
         Rename-Item  -Path $_.fullname -Newname $NewName; 
     }
 
-### TODO: loop through soluton files and replace content containing .csproj to .csproj-temp
-### TODO: loop through soluton files and replace content containing .nfproj to .csproj
+
 
 # find solution file in repository
 $solutionFiles = (Get-ChildItem -Path ".\" -Include "*.sln" -Recurse)
+
+### TODO: loop through soluton files and replace content containing .csproj to .csproj-temp
+### TODO: loop through soluton files and replace content containing .nfproj to .csproj
+foreach ($solutionFile in $solutionFiles)
+{
+    $content = Get-Content $solutionFile
+    $content = $content -replace '.csproj', '.csproj-temp'
+    $content = $content -replace '.nfproj', '.csproj'
+    $content | Set-Content -Path '$solutionFile
+}
     
 # find NuGet.Config
 $nugetConfig = (Get-ChildItem -Path ".\" -Include "NuGet.Config" -Recurse) | Select-Object -First 1
@@ -261,6 +270,14 @@ Foreach-object {
     $NewName = $_.name -replace 'csproj-temp','csproj'; 
     Rename-Item  -Path $_.fullname -Newname $NewName; 
     }
+
+foreach ($solutionFile in $solutionFiles)
+{
+    $content = Get-Content $solutionFile
+    $content = $content -replace '.csproj-temp', '.csproj'
+    $content = $content -replace '.csproj', '.nfproj'
+    $content | Set-Content -Path '$solutionFile
+}
 
 if($updateCount -eq 0)
 {
