@@ -54,8 +54,7 @@ Get-ChildItem -Path $workingPath -Include "*.nfproj" -Recurse |
 # find solution file in repository
 $solutionFiles = (Get-ChildItem -Path ".\" -Include "*.sln" -Recurse)
 
-### TODO: loop through soluton files and replace content containing .csproj to .csproj-temp
-### TODO: loop through soluton files and replace content containing .nfproj to .csproj
+# loop through soluton files and replace content containing .csproj to .csproj-temp and .nfproj to .csproj so nuget can handle them.
 foreach ($solutionFile in $solutionFiles)
 {
     $content = Get-Content $solutionFile
@@ -241,10 +240,7 @@ foreach ($solutionFile in $solutionFiles)
                     }
 
                     # build commit message
-                    $commitMessage += "Bumps $packageName from $packageOriginVersion to $packageTargetVersion.`n"
-                    # build PR title
-                    #$prTitle = "Bumps $packageName from $packageOriginVersion to $packageTargetVersion"
-
+                    $commitMessage += "Bumps $packagesPath $packageName from $packageOriginVersion to $packageTargetVersion.`n"
                 }
 
             }
@@ -269,13 +265,13 @@ Foreach-object {
     Rename-Item  -Path $_.fullname -Newname $NewName; 
     }
 
-### TODO: loop through soluton files and replace content containing .csproj-temp to .csproj
-### TODO: loop through soluton files and replace content containing .csproj to .nfproj
+
+# loop through soluton files and revert names to default.
 foreach ($solutionFile in $solutionFiles)
 {
     $content = Get-Content $solutionFile
     $content = $content -replace '.csproj', '.nfproj'
-    $content = $content -replace '.csproj-temp', '.csproj'
+    $content = $content -replace '.nfproj-temp', '.csproj' #This is because the above replace affects the name "csproj-temp", so it is actually "nfproj-temp".
     $content | Set-Content -Path $solutionFile
 }
 
@@ -290,16 +286,11 @@ else
     "Generating PR information..." | Write-Host
    
     # fix PR title
-    $prTitle = "Update dependencies"
-
-    "This is the commit message?!" | Write-Host
-    $commitMessage | Write-Host
-
-    $commitMessage = "Updating multiple dependencies"
+    $prTitle = "Update $updateCount nuget dependencies"
 
     echo "CREATE_PR=true" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf8 -Append
     echo "BRANCH_NAME=$newBranchName" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf8 -Append
-    echo "PR_MESSAGE=$commitMessage" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf8 -Append
+    echo "PR_MESSAGE='$commitMessage'" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf8 -Append
     echo "PR_TITLE=$prTitle" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf8 -Append   
     
 }
