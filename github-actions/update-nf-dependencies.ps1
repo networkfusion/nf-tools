@@ -33,6 +33,22 @@ git config --global user.name nfbot
 git config --global user.email dependencybot@nanoframework.net
 git config --global core.autocrlf true
 
+# temporarily rename csproj files to csproj-temp so they are not affected.
+Get-ChildItem -Path $workingPath -Include "*.csproj" -Recurse |
+    Foreach-object {
+        $OldName = $_.name; 
+        $NewName = $_.name -replace 'csproj','csproj-temp'; 
+        Rename-Item  -Path $_.fullname -Newname $NewName; 
+    }
+
+# temporarily rename nfproj files to csproj
+Get-ChildItem -Path $workingPath -Include "*.nfproj" -Recurse |
+    Foreach-object {
+        $OldName = $_.name; 
+        $NewName = $_.name -replace 'nfproj','csproj'; 
+        Rename-Item  -Path $_.fullname -Newname $NewName; 
+    }
+
 # find solution file in repository
 $solutionFiles = (Get-ChildItem -Path ".\" -Include "*.sln" -Recurse)
     
@@ -90,21 +106,7 @@ foreach ($solutionFile in $solutionFiles)
             }
             
 
-            # temporarily rename csproj files to csproj-temp so they are not affected.
-            Get-ChildItem -Path $workingPath -Include "*.csproj" -Recurse |
-                Foreach-object {
-                    $OldName = $_.name; 
-                    $NewName = $_.name -replace 'csproj','csproj-temp'; 
-                    Rename-Item  -Path $_.fullname -Newname $NewName; 
-                }
 
-            # temporarily rename nfproj files to csproj
-            Get-ChildItem -Path $workingPath -Include "*.nfproj" -Recurse |
-                Foreach-object {
-                    $OldName = $_.name; 
-                    $NewName = $_.name -replace 'nfproj','csproj'; 
-                    Rename-Item  -Path $_.fullname -Newname $NewName; 
-                }
 
             # update all packages
             foreach ($package in $packageList)
@@ -236,25 +238,24 @@ foreach ($solutionFile in $solutionFiles)
 
             }
         }
-
-        # rename csproj files back to nfproj
-        Get-ChildItem -Path $workingPath -Include "*.csproj" -Recurse |
-        Foreach-object {
-            $OldName = $_.name; 
-            $NewName = $_.name -replace 'csproj','nfproj'; 
-            Rename-Item  -Path $_.fullname -Newname $NewName; 
-            }
-
-        # rename csproj-temp files back to csproj
-        Get-ChildItem -Path $workingPath -Include "*.csproj-temp" -Recurse |
-        Foreach-object {
-            $OldName = $_.name; 
-            $NewName = $_.name -replace 'csproj-temp','csproj'; 
-            Rename-Item  -Path $_.fullname -Newname $NewName; 
-            }
-
     }
 }
+
+# rename csproj files back to nfproj
+Get-ChildItem -Path $workingPath -Include "*.csproj" -Recurse |
+Foreach-object {
+    $OldName = $_.name; 
+    $NewName = $_.name -replace 'csproj','nfproj'; 
+    Rename-Item  -Path $_.fullname -Newname $NewName; 
+    }
+
+# rename csproj-temp files back to csproj
+Get-ChildItem -Path $workingPath -Include "*.csproj-temp" -Recurse |
+Foreach-object {
+    $OldName = $_.name; 
+    $NewName = $_.name -replace 'csproj-temp','csproj'; 
+    Rename-Item  -Path $_.fullname -Newname $NewName; 
+    }
 
 if($updateCount -eq 0)
 {
