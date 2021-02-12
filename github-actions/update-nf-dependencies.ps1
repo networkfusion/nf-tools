@@ -61,7 +61,7 @@ foreach ($solutionFile in $solutionFiles)
     $content = Get-Content $solutionFile
     $content = $content -replace '.csproj', '.csproj-temp'
     $content = $content -replace '.nfproj', '.csproj'
-    $content | Set-Content -Path '$solutionFile
+    $content | Set-Content -Path $solutionFile
 }
     
 # find NuGet.Config
