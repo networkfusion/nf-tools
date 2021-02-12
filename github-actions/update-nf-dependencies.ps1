@@ -101,7 +101,7 @@ foreach ($solutionFile in $solutionFiles)
             }
         }
 
-        $packageList = $packageList | select -Unique
+        #$packageList = $packageList | select -Unique
 
         if ($packageList.length -gt 0)
         {
@@ -243,7 +243,7 @@ foreach ($solutionFile in $solutionFiles)
                     # build commit message
                     $commitMessage += "Bumps $packageName from $packageOriginVersion to $packageTargetVersion.`n"
                     # build PR title
-                    $prTitle = "Bumps $packageName from $packageOriginVersion to $packageTargetVersion"
+                    #$prTitle = "Bumps $packageName from $packageOriginVersion to $packageTargetVersion"
 
                 }
 
@@ -297,7 +297,7 @@ else
 
     echo "CREATE_PR=true" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf8 -Append
     echo "BRANCH_NAME=$newBranchName" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf8 -Append
-    echo "PR_MESSAGE=$commitMessage" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf8 -Append
+    echo "PR_MESSAGE=[string]$commitMessage" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf8 -Append
     echo "PR_TITLE=$prTitle" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf8 -Append   
     
 }
