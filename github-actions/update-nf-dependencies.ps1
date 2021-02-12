@@ -3,19 +3,19 @@
 
 # This PS update the .NET nanoFramework dependencies on the repo where it's running
 
-    ######################################
-    # this is building from github actions
+######################################
+# this is building from github actions
 
-    # get repository name from the repo path
-    Set-Location ".." | Out-Null
-    $library = Split-Path $(Get-Location) -Leaf
+# get repository name from the repo path
+Set-Location ".." | Out-Null
+$library = Split-Path $(Get-Location) -Leaf
 
-    "Repository: '$library'" | Write-Host
+"Repository: '$library'" | Write-Host
 
-    # need this to move to the 
-    "Moving to 'main' folder" | Write-Host
+# need this to move to the 
+"Moving to 'main' folder" | Write-Host
 
-    Set-Location "main" | Out-Null
+Set-Location "main" | Out-Null
 
 # init/reset these
 $updateCount = 0
@@ -43,195 +43,198 @@ foreach ($solutionFile in $solutionFiles)
 {
     $packagesPath = Split-Path -Path $solutionFile
     # find packages.config
-    $packagesConfig = (Get-ChildItem -Path "$packagesPath" -Include "packages.config" -Recurse)
+    $packagesConfigs = (Get-ChildItem -Path "$packagesPath" -Include "packages.config" -Recurse)
 
-    # load packages.config as XML doc
-    [xml]$packagesDoc = Get-Content $packagesConfig
-
-    $nodes = $packagesDoc.SelectNodes("*").SelectNodes("*")
-
-    $packageList = @(,@())
-
-    "Building package list to update" | Write-Host
-
-    foreach ($node in $nodes)
+    foreach ($packagesConfig in $packagesConfigs)
     {
-        # filter out Nerdbank.GitVersioning package
-        if($node.id -notlike "Nerdbank.GitVersioning*")
+        # load packages.config as XML doc
+        [xml]$packagesDoc = Get-Content $packagesConfig
+
+        $nodes = $packagesDoc.SelectNodes("*").SelectNodes("*")
+
+        $packageList = @(,@())
+
+        "Building package list to update" | Write-Host
+
+        foreach ($node in $nodes)
         {
-            "Adding {0} {1}" -f [string]$node.id,[string]$node.version | Write-Host
-            if($packageList)
+            # filter out Nerdbank.GitVersioning package
+            if($node.id -notlike "Nerdbank.GitVersioning*")
             {
-                $packageList += , ($node.id,  $node.version)
-            }
-            else
-            {
-                $packageList = , ($node.id,  $node.version)
-            }
-        }
-    }
-
-    $packageList = $packageList | select -Unique
-
-    if ($packageList.length -gt 0)
-    {
-        "NuGet packages to update:" | Write-Host
-        $packageList | Write-Host
-
-        if (![string]::IsNullOrEmpty($nugetConfig))
-        {
-            nuget restore $solutionFile -ConfigFile $nugetConfig
-        }
-        else
-        {
-            nuget restore $solutionFile
-        }
-        
-
-        # temporarily rename csproj files to csproj-temp so they are not affected.
-        Get-ChildItem -Path $workingPath -Include "*.csproj" -Recurse |
-            Foreach-object {
-                $OldName = $_.name; 
-                $NewName = $_.name -replace 'csproj','csproj-temp'; 
-                Rename-Item  -Path $_.fullname -Newname $NewName; 
-            }
-
-        # temporarily rename nfproj files to csproj
-        Get-ChildItem -Path $workingPath -Include "*.nfproj" -Recurse |
-            Foreach-object {
-                $OldName = $_.name; 
-                $NewName = $_.name -replace 'nfproj','csproj'; 
-                Rename-Item  -Path $_.fullname -Newname $NewName; 
-            }
-
-        # update all packages
-        foreach ($package in $packageList)
-        {
-            # get package name and target version
-            $packageName = $package[0]
-            $packageOriginVersion = $package[1]
-
-            "Updating package $packageName" | Write-Host
-
-            if ('${{ github.ref }}' -like '*release*' -or '${{ github.ref }}' -like '*master*' -or '${{ github.ref }}' -like '*main*' -or '${{ github.ref }}' -like '*stable*')
-            {
-                # don't allow prerelease for release and master branches
-                foreach ($solutionFile in $solutionFiles)
+                "Adding {0} {1}" -f [string]$node.id,[string]$node.version | Write-Host
+                if($packageList)
                 {
-                    if (![string]::IsNullOrEmpty($nugetConfig))
-                    {
-                        nuget update $solutionFile.FullName -Id "$packageName" -ConfigFile $nugetConfig
-                    }
-                    else
-                    {
-                        nuget update $solutionFile.FullName -Id "$packageName"
-                    }
-                }
-            }
-            else
-            {
-
-                if (![string]::IsNullOrEmpty($nugetConfig))
-                {
-                   nuget update $solutionFile.FullName -Id "$packageName" -ConfigFile $nugetConfig -PreRelease
+                    $packageList += , ($node.id,  $node.version)
                 }
                 else
                 {
-                    nuget update $solutionFile.FullName -Id "$packageName" -PreRelease
+                    $packageList = , ($node.id,  $node.version)
                 }
             }
+        }
 
-            # need to get target version
-            # load packages.config as XML doc
-            [xml]$packagesDoc = Get-Content $packagesConfig
+        $packageList = $packageList | select -Unique
 
-            $nodes = $packagesDoc.SelectNodes("*").SelectNodes("*")
+        if ($packageList.length -gt 0)
+        {
+            "NuGet packages to update:" | Write-Host
+            $packageList | Write-Host
 
-            foreach ($node in $nodes)
+            if (![string]::IsNullOrEmpty($nugetConfig))
             {
-                # find this package
-                if($node.id -match $packageName)
-                {
-                    $packageTargetVersion = $node.version
-                }
-            }
-
-            # sanity check
-            if($packageTargetVersion -eq $packageOriginVersion)
-            {
-                "Skip update of $packageName because it has the same version as before: $packageOriginVersion." | Write-Host -ForegroundColor Cyan
+                nuget restore $solutionFile -ConfigFile $nugetConfig
             }
             else
             {
-                "Bumping $packageName from $packageOriginVersion to $packageTargetVersion." | Write-Host -ForegroundColor Cyan                
+                nuget restore $solutionFile
+            }
+            
 
-                $updateCount = $updateCount + 1;
-
-                #  find csproj(s)
-                $projectFiles = (Get-ChildItem -Path ".\" -Include "*.csproj" -Recurse)
-
-                "Updating NFMDP_PE LoadHints" | Write-Host
-
-                # replace NFMDP_PE_LoadHints
-                foreach ($project in $projectFiles)
-                {
-                    $filecontent = Get-Content($project)
-                    attrib $project -r
-                    $filecontent -replace "($packageName.$packageOriginVersion)", "$packageName.$packageTargetVersion" | Out-File $project -Encoding utf8
+            # temporarily rename csproj files to csproj-temp so they are not affected.
+            Get-ChildItem -Path $workingPath -Include "*.csproj" -Recurse |
+                Foreach-object {
+                    $OldName = $_.name; 
+                    $NewName = $_.name -replace 'csproj','csproj-temp'; 
+                    Rename-Item  -Path $_.fullname -Newname $NewName; 
                 }
 
-                # update nuspec files, if any
-                $nuspecFiles = (Get-ChildItem -Path ".\" -Include "*.nuspec" -Recurse)
-                
-                "Updating nuspec files" | Write-Host
+            # temporarily rename nfproj files to csproj
+            Get-ChildItem -Path $workingPath -Include "*.nfproj" -Recurse |
+                Foreach-object {
+                    $OldName = $_.name; 
+                    $NewName = $_.name -replace 'nfproj','csproj'; 
+                    Rename-Item  -Path $_.fullname -Newname $NewName; 
+                }
 
-                if ($nuspecFiles.length -gt 0)
+            # update all packages
+            foreach ($package in $packageList)
+            {
+                # get package name and target version
+                $packageName = $package[0]
+                $packageOriginVersion = $package[1]
+
+                "Updating package $packageName" | Write-Host
+
+                if ('${{ github.ref }}' -like '*release*' -or '${{ github.ref }}' -like '*master*' -or '${{ github.ref }}' -like '*main*' -or '${{ github.ref }}' -like '*stable*')
                 {
-                    foreach ($nuspec in $nuspecFiles)
+                    # don't allow prerelease for release and master branches
+                    foreach ($solutionFile in $solutionFiles)
                     {
-                        "Nuspec file is " | Write-Host
-
-                        [xml]$nuspecDoc = Get-Content $nuspec -Encoding UTF8
-
-                        $nodes = $nuspecDoc.SelectNodes("*").SelectNodes("*")
-
-                        foreach ($node in $nodes)
+                        if (![string]::IsNullOrEmpty($nugetConfig))
                         {
-                            if($node.Name -eq "metadata")
+                            nuget update $solutionFile.FullName -Id "$packageName" -ConfigFile $nugetConfig
+                        }
+                        else
+                        {
+                            nuget update $solutionFile.FullName -Id "$packageName"
+                        }
+                    }
+                }
+                else
+                {
+
+                    if (![string]::IsNullOrEmpty($nugetConfig))
+                    {
+                    nuget update $solutionFile.FullName -Id "$packageName" -ConfigFile $nugetConfig -PreRelease
+                    }
+                    else
+                    {
+                        nuget update $solutionFile.FullName -Id "$packageName" -PreRelease
+                    }
+                }
+
+                # need to get target version
+                # load packages.config as XML doc
+                [xml]$packagesDoc = Get-Content $packagesConfig
+
+                $nodes = $packagesDoc.SelectNodes("*").SelectNodes("*")
+
+                foreach ($node in $nodes)
+                {
+                    # find this package
+                    if($node.id -match $packageName)
+                    {
+                        $packageTargetVersion = $node.version
+                    }
+                }
+
+                # sanity check
+                if($packageTargetVersion -eq $packageOriginVersion)
+                {
+                    "Skip update of $packageName because it has the same version as before: $packageOriginVersion." | Write-Host -ForegroundColor Cyan
+                }
+                else
+                {
+                    "Bumping $packageName from $packageOriginVersion to $packageTargetVersion." | Write-Host -ForegroundColor Cyan                
+
+                    $updateCount = $updateCount + 1;
+
+                    #  find csproj(s)
+                    $projectFiles = (Get-ChildItem -Path ".\" -Include "*.csproj" -Recurse)
+
+                    "Updating NFMDP_PE LoadHints" | Write-Host
+
+                    # replace NFMDP_PE_LoadHints
+                    foreach ($project in $projectFiles)
+                    {
+                        $filecontent = Get-Content($project)
+                        attrib $project -r
+                        $filecontent -replace "($packageName.$packageOriginVersion)", "$packageName.$packageTargetVersion" | Out-File $project -Encoding utf8
+                    }
+
+                    # update nuspec files, if any
+                    $nuspecFiles = (Get-ChildItem -Path ".\" -Include "*.nuspec" -Recurse)
+                    
+                    "Updating nuspec files" | Write-Host
+
+                    if ($nuspecFiles.length -gt 0)
+                    {
+                        foreach ($nuspec in $nuspecFiles)
+                        {
+                            "Nuspec file is " | Write-Host
+
+                            [xml]$nuspecDoc = Get-Content $nuspec -Encoding UTF8
+
+                            $nodes = $nuspecDoc.SelectNodes("*").SelectNodes("*")
+
+                            foreach ($node in $nodes)
                             {
-                                foreach ($metadataItem in $node.ChildNodes)
-                                {                          
-                                    if($metadataItem.Name -eq "dependencies")
-                                    {
-                                        foreach ($dependency in $metadataItem.ChildNodes)
+                                if($node.Name -eq "metadata")
+                                {
+                                    foreach ($metadataItem in $node.ChildNodes)
+                                    {                          
+                                        if($metadataItem.Name -eq "dependencies")
                                         {
-                                            if($dependency.Attributes["id"].value -eq $packageName)
+                                            foreach ($dependency in $metadataItem.ChildNodes)
                                             {
-                                                "Updating dependency." | Write-Host
-                                                $dependency.Attributes["version"].value = "$packageTargetVersion"
+                                                if($dependency.Attributes["id"].value -eq $packageName)
+                                                {
+                                                    "Updating dependency." | Write-Host
+                                                    $dependency.Attributes["version"].value = "$packageTargetVersion"
+                                                }
                                             }
                                         }
                                     }
                                 }
                             }
+
+                            $nuspecDoc.Save($nuspec[0].FullName)
                         }
-
-                        $nuspecDoc.Save($nuspec[0].FullName)
+                        "Finished updating nuspec files." | Write-Host
                     }
-                    "Finished updating nuspec files." | Write-Host
-                }
-                else
-                {
-                    "No nuspec files to update." | Write-Host
-                }
+                    else
+                    {
+                        "No nuspec files to update." | Write-Host
+                    }
 
-                # build commit message
-                $commitMessage += "Bumps $packageName from $packageOriginVersion to $packageTargetVersion.`n"
-                # build PR title
-                $prTitle = "Bumps $packageName from $packageOriginVersion to $packageTargetVersion"
+                    # build commit message
+                    $commitMessage += "Bumps $packageName from $packageOriginVersion to $packageTargetVersion.`n"
+                    # build PR title
+                    $prTitle = "Bumps $packageName from $packageOriginVersion to $packageTargetVersion"
+
+                }
 
             }
-
         }
 
         # rename csproj files back to nfproj
