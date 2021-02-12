@@ -239,8 +239,8 @@ foreach ($solutionFile in $solutionFiles)
                         "No nuspec files to update." | Write-Host
                     }
 
-                    # build commit message
-                    $commitMessage += "Bumps $packagesPath $packageName from $packageOriginVersion to $packageTargetVersion.`n"
+                    # build commit message (we cannot use newlines, as Environment Variables cannot handle them).
+                    $commitMessage += "Bumps $packagesPath $packageName from $packageOriginVersion to $packageTargetVersion, "
                 }
 
             }
@@ -288,9 +288,13 @@ else
     # fix PR title
     $prTitle = "Update $updateCount nuget dependencies"
 
+    #Fix end of commit message.
+    $commitMessage = $commitMessage.TrimEnd(", ")
+    $commitMessage += "."
+
     echo "CREATE_PR=true" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf8 -Append
     echo "BRANCH_NAME=$newBranchName" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf8 -Append
-    echo "PR_MESSAGE='$commitMessage'" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf8 -Append
+    echo "PR_MESSAGE=$commitMessage" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf8 -Append
     echo "PR_TITLE=$prTitle" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf8 -Append   
     
 }
