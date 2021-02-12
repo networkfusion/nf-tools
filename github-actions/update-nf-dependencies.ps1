@@ -292,6 +292,9 @@ else
     # fix PR title
     $prTitle = "Update dependencies"
 
+    "This is the commit message?!" | Write-Host
+    $commitMessage | Write-Host
+
     echo "CREATE_PR=true" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf8 -Append
     echo "BRANCH_NAME=$newBranchName" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf8 -Append
     echo "PR_MESSAGE=$commitMessage" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf8 -Append
