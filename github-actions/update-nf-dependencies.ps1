@@ -143,7 +143,7 @@ foreach ($solutionFile in $solutionFiles)
 
             # need to get target version
             # load packages.config as XML doc
-            [xml]$packagesDoc = Get-Content $packageFile
+            [xml]$packagesDoc = Get-Content $packagesConfig
 
             $nodes = $packagesDoc.SelectNodes("*").SelectNodes("*")
 
