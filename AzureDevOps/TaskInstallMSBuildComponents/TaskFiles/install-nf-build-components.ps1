@@ -17,22 +17,22 @@ function DownloadVsixFile($fileUrl, $downloadFileName)
 }
 
 # get extension information from Open VSIX Gallery feed
-$vsixFeedXml = Join-Path  $($env:Agent_TempDirectory) "vs-extension-feed.xml"
+$vsixFeedXml = Join-Path  ./temp "vs-extension-feed.xml"
 $webClient.DownloadFile("http://vsixgallery.com/feed/author/nanoframework", $vsixFeedXml)
 [xml]$feedDetails = Get-Content $vsixFeedXml
 
 
-# find which entry corresponds to which VS version
-if($feedDetails.feed.entry[0].id -eq '455f2be5-bb07-451e-b351-a9faf3018dc9')
-{
-    $idVS2019 = 0
-    $idVS2017 = 1
-}
-else
-{
+# # find which entry corresponds to which VS version
+# if($feedDetails.feed.entry[0].id -eq '455f2be5-bb07-451e-b351-a9faf3018dc9')
+# {
+#     $idVS2019 = 0
+#     $idVS2017 = 1
+# }
+# else
+# {
     $idVS2019 = 1
     $idVS2017 = 0
-}
+# }
 
 # find which VS version is installed
 $VsWherePath = "${env:PROGRAMFILES(X86)}\Microsoft Visual Studio\Installer\vswhere.exe"
@@ -43,20 +43,20 @@ $VsInstance = $(&$VSWherePath -latest -property displayName)
 
 # feed list VS2017 and VS2019 extensions
 # index 0 is for VS2017, running on Windows Server 2016
-if($vsInstance.Contains('2017'))
-{
-    $extensionUrl = $feedDetails.feed.entry[$idVS2017].content.src
-    $vsixPath = Join-Path  $($env:Agent_TempDirectory) "nanoFramework.Tools.VS2017.Extension.zip"
-    # this was the original download URL that provides the last version, but the marketplace is blocking access to it
-    # "https://marketplace.visualstudio.com/_apis/public/gallery/publishers/vs-publisher-1470366/vsextensions/nanoFrameworkVS2017Extension/0/vspackage 
-    $extensionVersion = $feedDetails.feed.entry[$idVS2017].Vsix.Version
-}
-elseif($vsInstance.Contains('2019'))
-{
+# if($vsInstance.Contains('2017'))
+# {
+#     $extensionUrl = $feedDetails.feed.entry[$idVS2017].content.src
+#     $vsixPath = Join-Path  $($env:Agent_TempDirectory) "nanoFramework.Tools.VS2017.Extension.zip"
+#     # this was the original download URL that provides the last version, but the marketplace is blocking access to it
+#     # "https://marketplace.visualstudio.com/_apis/public/gallery/publishers/vs-publisher-1470366/vsextensions/nanoFrameworkVS2017Extension/0/vspackage 
+#     $extensionVersion = $feedDetails.feed.entry[$idVS2017].Vsix.Version
+# }
+# elseif($vsInstance.Contains('2019'))
+# {
     $extensionUrl = $feedDetails.feed.entry[$idVS2019].content.src
-    $vsixPath = Join-Path  $($env:Agent_TempDirectory) "nanoFramework.Tools.VS2019.Extension.zip"
+    $vsixPath = Join-Path  ./temp "nanoFramework.Tools.VS2019.Extension.zip"
     $extensionVersion = $feedDetails.feed.entry[$idVS2019].Vsix.Version
-}
+# }
 
 # download VS extension
 DownloadVsixFile $extensionUrl $vsixPath
@@ -66,7 +66,7 @@ $sevenZip = "$PSScriptRoot\7zip\7z.exe"
 
 # unzip extension
 Write-Debug "Unzip extension content"
-Invoke-VstsTool -FileName $sevenZip -Arguments " x $vsixPath -bd -o$env:Agent_TempDirectory\nf-extension" > $null
+Invoke-VstsTool -FileName $sevenZip -Arguments " x $vsixPath -bd -o'.\temp\nf-extension'" > $null
 
 # copy build files to msbuild location
 $VsPath = $(&$VsWherePath -latest -property installationPath)
