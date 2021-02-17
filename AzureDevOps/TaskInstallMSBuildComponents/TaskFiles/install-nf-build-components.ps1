@@ -79,4 +79,4 @@ Copy-Item -Path "$env:Agent_TempDirectory\nf-extension\`$MSBuild\nanoFramework" 
 
 Write-Output "Installed VS extension v$extensionVersion"
 
-Trace-VstsLeavingInvocation $MyInvocation
+#Trace-VstsLeavingInvocation $MyInvocation
