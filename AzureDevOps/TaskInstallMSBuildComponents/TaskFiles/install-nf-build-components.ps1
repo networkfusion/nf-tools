@@ -1,7 +1,7 @@
 [CmdletBinding()]
 param()
 
-Trace-VstsEnteringInvocation $MyInvocation
+#Trace-VstsEnteringInvocation $MyInvocation
 
 Import-Module $PSScriptRoot\ps_modules\VstsTaskSdk
 
