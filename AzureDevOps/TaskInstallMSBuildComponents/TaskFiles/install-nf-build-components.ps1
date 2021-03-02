@@ -50,7 +50,7 @@ DownloadVsixFile $extensionUrl $vsixPath
 
 # unzip extension
 Write-Host "Unzip extension content"
-Expand-Archive -LiteralPath $vsixPath -DestinationPath $tempDir
+Expand-Archive -LiteralPath $vsixPath -DestinationPath $tempDir\nf-extension\ | Write-Host
 
 #install extension
 #Invoke-VstsTool -FileName $vsixPath #$tempDir\nanoFramework.Tools.VS2019.Extension\
