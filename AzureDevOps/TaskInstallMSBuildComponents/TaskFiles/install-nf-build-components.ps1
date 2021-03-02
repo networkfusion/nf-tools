@@ -48,12 +48,12 @@ $extensionVersion = $feedDetails.feed.entry[$idVS2019].Vsix.Version
 # download VS extension
 DownloadVsixFile $extensionUrl $vsixPath
 
-# get path to 7zip
-$sevenZip = "$PSScriptRoot\7zip\7z.exe"
-
 # unzip extension
 Write-Host "Unzip extension content"
-Invoke-VstsTool -FileName $sevenZip -Arguments " x $vsixPath -bd -o$tempDir\nf-extension" > $null
+Expand-Archive -LiteralPath $vsixPath -DestinationPath $tempDir\nf-extension\
+
+#install extension
+Invoke-VstsTool -FileName $tempDir\nf-extension\
 
 # copy build files to msbuild location
 $VsPath = $(&$VsWherePath -latest -property installationPath)
