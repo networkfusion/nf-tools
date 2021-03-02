@@ -23,10 +23,6 @@ Set-Location "main" | Out-Null
 # init/reset these
 $workingPath = '.\'
 
-# need this to remove definition of redirect stdErr (only on Azure Pipelines image fo VS2019)
-$env:GIT_REDIRECT_STDERR = '2>&1'
-
-
 # temporarily rename csproj files to projcs-temp so they are not affected.
 Get-ChildItem -Path $workingPath -Include "*.csproj" -Recurse |
     Foreach-object {
