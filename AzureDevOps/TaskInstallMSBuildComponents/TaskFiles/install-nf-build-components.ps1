@@ -53,7 +53,7 @@ $sevenZip = "$PSScriptRoot\7zip\7z.exe"
 
 # unzip extension
 Write-Host "Unzip extension content"
-Invoke-VstsTool -FileName $sevenZip -Arguments " x $vsixPath -bd -o'$tempDir\nf-extension'" > $null
+Invoke-VstsTool -FileName $sevenZip -Arguments " x $vsixPath -bd -o$tempDir\nf-extension" > $null
 
 # copy build files to msbuild location
 $VsPath = $(&$VsWherePath -latest -property installationPath)
