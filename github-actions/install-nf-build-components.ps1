@@ -1,16 +1,3 @@
-[CmdletBinding()]
-param()
-
-#Trace-VstsEnteringInvocation $MyInvocation
-
-"Started VS extension install" | Write-Host
-
-Import-Module $PSScriptRoot\ps_modules\VstsTaskSdk
-
-"Imported VS task sdk" | Write-Host
-
-Import-VstsLocStrings "$PSScriptRoot\Task.json"
-
 [System.Net.WebClient]$webClient = New-Object System.Net.WebClient
 $webClient.UseDefaultCredentials = $true
 
