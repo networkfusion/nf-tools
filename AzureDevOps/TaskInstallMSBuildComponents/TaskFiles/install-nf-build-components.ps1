@@ -42,7 +42,7 @@ Write-Output "VsWherePath is: $VsWherePath"
 $VsInstance = $(&$VSWherePath -latest -property displayName)
 
 $extensionUrl = $feedDetails.feed.entry[$idVS2019].content.src
-$vsixPath = Join-Path-Path $tempDir -ChildPath "nanoFramework.Tools.VS2019.Extension.zip"
+$vsixPath = Join-Path -Path $tempDir -ChildPath "nanoFramework.Tools.VS2019.Extension.zip"
 $extensionVersion = $feedDetails.feed.entry[$idVS2019].Vsix.Version
 
 # download VS extension
