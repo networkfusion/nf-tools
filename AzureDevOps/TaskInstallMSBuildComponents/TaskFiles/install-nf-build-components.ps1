@@ -49,11 +49,15 @@ $extensionVersion = $feedDetails.feed.entry[$idVS2019].Vsix.Version
 DownloadVsixFile $extensionUrl $vsixPath
 
 # unzip extension
-Write-Host "Unzip extension content"
-Expand-Archive -LiteralPath $vsixPath -DestinationPath $tempDir\nf-extension\ | Write-Host
+#Write-Host "Unzip extension content"
+#Expand-Archive -LiteralPath $vsixPath -DestinationPath $tempDir\nf-extension\ | Write-Host
 
-#install extension
-#Invoke-VstsTool -FileName $vsixPath #$tempDir\nanoFramework.Tools.VS2019.Extension\
+# get path to 7zip
+$sevenZip = "$PSScriptRoot\7zip\7z.exe"
+
+#install build components
+#Invoke-VstsTool $tempDir\nf-extension
+Invoke-VstsTool -FileName $sevenZip -Arguments " x $vsixPath -bd -o'$tempDir\nf-extension'" > $null
 
 # copy build files to msbuild location
 $VsPath = $(&$VsWherePath -latest -property installationPath)
