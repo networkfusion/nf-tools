@@ -50,10 +50,10 @@ DownloadVsixFile $extensionUrl $vsixPath
 
 # unzip extension
 Write-Host "Unzip extension content"
-Expand-Archive -LiteralPath $vsixPath -DestinationPath $tempDir
+Expand-Archive -LiteralPath $vsixPath -DestinationPath $tempDir\nf-extension\
 
 #install extension
-Invoke-VstsTool -FileName $tempDir\nf-extension\nanoFramework.Tools.VS2019.Extension
+Invoke-VstsTool -FileName $tempDir\nf-extension\
 
 # copy build files to msbuild location
 $VsPath = $(&$VsWherePath -latest -property installationPath)
