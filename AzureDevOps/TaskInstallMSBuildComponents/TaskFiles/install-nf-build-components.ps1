@@ -42,7 +42,7 @@ Write-Output "VsWherePath is: $VsWherePath"
 $VsInstance = $(&$VSWherePath -latest -property displayName)
 
 $extensionUrl = $feedDetails.feed.entry[$idVS2019].content.src
-$vsixPath = Join-Path -Path $tempDir -ChildPath "nanoFramework.Tools.VS2019.Extension.zip"
+$vsixPath = Join-Path -Path $tempDir -ChildPath "nf-extension.zip"
 $extensionVersion = $feedDetails.feed.entry[$idVS2019].Vsix.Version
 
 # download VS extension
@@ -50,10 +50,10 @@ DownloadVsixFile $extensionUrl $vsixPath
 
 # unzip extension
 Write-Host "Unzip extension content"
-Expand-Archive -LiteralPath $vsixPath -DestinationPath $tempDir\nf-extension\
+Expand-Archive -LiteralPath $vsixPath -DestinationPath $tempDir
 
 #install extension
-Invoke-VstsTool -FileName $tempDir\nf-extension\
+#Invoke-VstsTool -FileName $vsixPath #$tempDir\nanoFramework.Tools.VS2019.Extension\
 
 # copy build files to msbuild location
 $VsPath = $(&$VsWherePath -latest -property installationPath)
