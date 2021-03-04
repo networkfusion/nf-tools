@@ -157,18 +157,24 @@ ForEach($library in $librariesToUpdate)
                 $packageName = $package[0]
                 $packageOriginVersion = $package[1]
 
-                Write-Debug "Updating package $packageName"
-
-                #https://docs.microsoft.com/en-us/nuget/reference/ps-reference/ps-ref-update-package
-                if ($env:Build_SourceBranchName -like '*release*' -or $env:Build_SourceBranchName -like '*master*')
+                if ($packageName -notlike 'nanoFramework.TestFramework*') #fails due to file conflict action not working!
                 {
-                    # don't allow prerelease for release and master branches
-                    Update-Package $solutionFile[0].FullName -Id "$packageName" -ConfigFile NuGet.Config -FileConflictAction OverwriteAll
+                    Write-Host "Updating package $packageName"
+                    #https://docs.microsoft.com/en-us/nuget/reference/ps-reference/ps-ref-update-package
+                    if ($env:Build_SourceBranchName -like '*release*' -or $env:Build_SourceBranchName -like '*master*')
+                    {
+                        # don't allow prerelease for release and master branches
+                        Update-Package $solutionFile[0].FullName -Id "$packageName" -ConfigFile NuGet.Config -FileConflictAction OverwriteAll
+                    }
+                    else
+                    {
+                        # allow prerelease for all others
+                        Update-Package $solutionFile[0].FullName -Id "$packageName" -ConfigFile NuGet.Config -PreRelease -FileConflictAction OverwriteAll
+                    }
                 }
                 else
                 {
-                    # allow prerelease for all others
-                    Update-Package $solutionFile[0].FullName -Id "$packageName" -ConfigFile NuGet.Config -PreRelease -FileConflictAction OverwriteAll
+                    Write-Host "Cannot update package $packageName automatically."
                 }
 
                 # need to get target version
