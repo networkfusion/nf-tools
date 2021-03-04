@@ -162,12 +162,12 @@ ForEach($library in $librariesToUpdate)
                 if ($env:Build_SourceBranchName -like '*release*' -or $env:Build_SourceBranchName -like '*master*')
                 {
                     # don't allow prerelease for release and master branches
-                    nuget update $solutionFile[0].FullName -Id "$packageName" -ConfigFile NuGet.Config -FileConflictAction Overwrite
+                    nuget update $solutionFile[0].FullName -Id "$packageName" -ConfigFile NuGet.Config -FileConflictAction OverwriteAll
                 }
                 else
                 {
                     # allow prerelease for all others
-                    nuget update $solutionFile[0].FullName -Id "$packageName" -ConfigFile NuGet.Config -PreRelease -FileConflictAction Overwrite
+                    nuget update $solutionFile[0].FullName -Id "$packageName" -ConfigFile NuGet.Config -PreRelease -FileConflictAction OverwriteAll
                 }
 
                 # need to get target version
