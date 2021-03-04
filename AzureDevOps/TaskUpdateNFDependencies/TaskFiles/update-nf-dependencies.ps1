@@ -157,7 +157,7 @@ ForEach($library in $librariesToUpdate)
                 $packageName = $package[0]
                 $packageOriginVersion = $package[1]
 
-                if ($packageName -notlike 'nanoFramework.TestFramework*') #fails due to file conflict action not working!
+                if ($packageName -notlike '*nanoFramework.TestFramework*') #fails due to file conflict action not working!
                 {
                     Write-Host "Updating package $packageName"
                     #https://docs.microsoft.com/en-us/nuget/reference/ps-reference/ps-ref-update-package
