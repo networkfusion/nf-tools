@@ -56,7 +56,7 @@ else
 $updateCount = 0
 $commitMessage = ""
 $prTitle = ""
-$newBranchName = "develop-nfbot/update-dependencies/" + ${{ github.ref }} #+ [guid]::NewGuid().ToString()
+$newBranchName = 'develop-nfbot/update-dependencies-${{ github.ref }}' #+ [guid]::NewGuid().ToString()
 $workingPath = '.\'
 
 # need this to remove definition of redirect stdErr (only on Azure Pipelines image fo VS2019)
