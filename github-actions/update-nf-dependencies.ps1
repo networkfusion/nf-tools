@@ -8,7 +8,7 @@ param ($nugetReleaseType)
 
 if ([string]::IsNullOrEmpty($nugetReleaseType))
 {
-    if('${{ github.ref }}' -like '*release*' -or '${{ github.ref }}' -like '*master*' -or '${{ github.ref }}' -like '*main*' -or '${{ github.ref }}' -like '*stable*')
+    if($env:GITHUB_REF -like '*release*' -or $env:GITHUB_REF -like '*master*' -or $env:GITHUB_REF -like '*main*' -or $env:GITHUB_REF -like '*stable*')
     {
         $nugetReleaseType = "stable"
     }
@@ -56,7 +56,7 @@ else
 $updateCount = 0
 $commitMessage = ""
 $prTitle = ""
-$newBranchName = 'develop-nfbot/update-dependencies-${{ github.ref }}' #+ [guid]::NewGuid().ToString()
+$newBranchName = "develop-nfbot/update-dependencies-$env:GITHUB_REF" #+ [guid]::NewGuid().ToString()
 $workingPath = '.\'
 
 # need this to remove definition of redirect stdErr (only on Azure Pipelines image fo VS2019)
